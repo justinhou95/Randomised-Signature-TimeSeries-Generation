@@ -71,7 +71,7 @@ class RSigW1Metric:
             self.expected_rsig_real = compute_rsig(self.x_real, self.A1, self.A2, self.xi1, self.xi2, self.res_dim,
                                                    self.activation).mean(0).to(self.device)
 
-    def __call__(self, x_fake: torch.tensor) -> double:
+    def __call__(self, x_fake: torch.tensor) -> float:
         if self.terminal_diff:
             expected_rsig_fake = compute_rsig_td(x_fake, self.A1, self.A2, self.xi1, self.xi2, self.res_dim,
                                                  self.activation).mean(0).to(self.device)
@@ -88,7 +88,7 @@ class RSigWGANTraining:
     """
 
     def __init__(self, x_train: torch.tensor, x_val: torch.tensor, batch_size: int, generator,
-                 num_grad_steps: int, learning_rate: double, res_dim: int, data_dim: int, activation: str,
+                 num_grad_steps: int, learning_rate: float, res_dim: int, data_dim: int, activation: str,
                  device=DEVICE):
         self.x_train = x_train
         self.x_val = x_val

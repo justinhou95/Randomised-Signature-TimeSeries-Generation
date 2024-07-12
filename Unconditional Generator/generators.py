@@ -31,7 +31,7 @@ class NeuralSDEGenerator(GeneratorBase):
     Class implementing the NeuralSDE generator model
     """
     
-    def __init__(self, input_dim: int, output_dim: int, reservoir_dim: int, brownian_dim: int, activation,
+    def __init__(self, n_lag: int, input_dim: int, output_dim: int, reservoir_dim: int, brownian_dim: int, activation,
                  hidden_dim: int = 32, device: str = DEVICE):
         super().__init__(input_dim, output_dim)
         self.reservoir_dim = reservoir_dim
@@ -66,7 +66,7 @@ class NeuralSDEGenerator(GeneratorBase):
         """
         
         self.readouts = nn.ModuleList([nn.Linear(self.reservoir_dim, self.output_dim, device=DEVICE)
-                                       for i in range(10)])
+                                       for i in range(n_lag)])
 
     def solve_neural_sde(self, V: torch.tensor, W: torch.tensor) -> torch.tensor:
         """
