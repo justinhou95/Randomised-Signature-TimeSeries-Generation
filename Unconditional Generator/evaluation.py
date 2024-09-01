@@ -134,3 +134,10 @@ class Evaluation:
         fig.savefig("path/{}/{}-{}-{}-{}-{}-plot.pdf".
                     format(self.data_type, self.generator_id, self.discriminator_id,
                            self.activation, self.num_epochs, datetime.now().strftime("%d%m%Y-%H%M%S")))
+        
+
+    def save_to_compare(self,n_samples):
+        x_fake = self.best_generator(batch_size=n_samples, n_lags=self.n_lags).to(self.device)
+        x_fake_scale_inverse = self.scaler.inverse(x_fake)
+        return x_fake_scale_inverse
+  

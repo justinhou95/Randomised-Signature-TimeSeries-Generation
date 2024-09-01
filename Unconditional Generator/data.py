@@ -44,6 +44,44 @@ class BM(Data):
         path[:, 1:, :] = self.drift * self.h + math.sqrt(self.h) * self.std * torch.randn(samples, self.n_lags - 1,
                                                                                           self.dim)
         return torch.cumsum(path, 1)
+    
+
+def simulate_BM(n_sample, dt, n_timestep):
+    noise = torch.randn(size=(n_sample, n_timestep))
+    paths_incr = noise * torch.sqrt(torch.tensor(dt))
+    paths = torch.cumsum(paths_incr, axis=1)
+    BM_paths = torch.cat([torch.zeros((n_sample, 1)), paths], axis=1)
+    BM_paths = BM_paths[..., None]
+    return BM_paths
+
+
+def simulate_BS(n_sample, dt, n_timestep, mu, sigma):
+    time_grid = torch.linspace(0, dt * n_timestep, n_timestep + 1)
+    time_paths = time_grid.expand([n_sample, n_timestep + 1])[..., None]
+    BM_paths = simulate_BM(n_sample, dt, n_timestep)
+    BS_paths = torch.exp(sigma * BM_paths + (mu - 0.5 * sigma**2) * time_paths)
+    return BS_paths
+
+class BS(Data):
+    """
+    Class implementing generation of Brownian motion paths
+    """
+
+    def __init__(self, n_lags: int, drift: float = 0.0, std: float = 1.0, dim: int = 1, T: float = 1.0):
+        super().__init__(n_lags)
+        self.drift = drift
+        self.std = std
+        self.dim = dim
+        self.n_lags = n_lags
+        self.h = T / n_lags
+        self.scaler = IDScaler()
+
+    def generate(self, samples: int) -> torch.tensor:
+        n_sample = samples
+        dt = self.h
+        n_timestep = self.n_lags-1
+        path = simulate_BS(n_sample, dt, n_timestep, self.drift, self.std)
+        return path
 
 
 class AR(Data):
@@ -163,4 +201,7 @@ def get_data(id: str) -> torch.tensor:
     elif id == "FOREX":
         data = FOREX(N_LAGS)
         paths = data.generate()
+    elif id == "BS":
+        data = BS(N_LAGS, DRIFT_BS, STD_BS, DATA_DIM, DATA_T)
+        paths = data.generate(SAMPLES_BS)
     return [data, train_test_split(paths)]
